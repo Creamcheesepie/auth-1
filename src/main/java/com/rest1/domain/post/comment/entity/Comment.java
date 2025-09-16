@@ -1,9 +1,11 @@
 package com.rest1.domain.post.comment.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.rest1.domain.member.member.entity.Member;
 import com.rest1.domain.post.post.entity.Post;
 import com.rest1.global.jpa.entity.BaseEntity;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.ManyToOne;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -20,7 +22,16 @@ public class Comment extends BaseEntity {
     @JsonIgnore
     private Post post;
 
-    public void update(String content) {
+    @ManyToOne(fetch = FetchType.LAZY)
+    private Member author;
+
+    public Comment(Member author, String content) {
+        this.author = author;
+        this.content = content;
+    }
+
+    public void update(Member author,String content) {
+        this.author = author;
         this.content = content;
     }
 }

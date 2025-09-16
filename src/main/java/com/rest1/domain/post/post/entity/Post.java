@@ -1,11 +1,9 @@
 package com.rest1.domain.post.post.entity;
 
+import com.rest1.domain.member.member.entity.Member;
 import com.rest1.domain.post.comment.entity.Comment;
 import com.rest1.global.jpa.entity.BaseEntity;
-import jakarta.persistence.CascadeType;
-import jakarta.persistence.Entity;
-import jakarta.persistence.FetchType;
-import jakarta.persistence.OneToMany;
+import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -20,23 +18,27 @@ public class Post extends BaseEntity {
     private String title;
     private String content;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    private Member author;
+
     @OneToMany(mappedBy = "post", cascade = {CascadeType.PERSIST, CascadeType.REMOVE}, orphanRemoval=true, fetch = FetchType.LAZY)
     private List<Comment> comments = new ArrayList<>();
 
-    public Post(String title, String content) {
+    public Post(Member author,String title, String content) {
+        this.author = author;
         this.title = title;
         this.content = content;
     }
 
-    public void update(String title, String content) {
+    public void update(Member author, String title, String content) {
+        this.author = author;
         this.title = title;
         this.content = content;
     }
 
-    public Comment addComment(String content) {
-        Comment comment = new Comment(content, this);
+    public Comment addComment(Member author, String content) {
+        Comment comment = new Comment(author, content);
         this.comments.add(comment);
-
         return comment;
     }
 
@@ -45,9 +47,9 @@ public class Post extends BaseEntity {
         this.comments.remove(comment);
     }
 
-    public Comment updateComment(Long commentId, String content) {
+    public Comment updateComment(Member author,Long commentId, String content) {
         Comment comment = findCommentById(commentId).get();
-        comment.update(content);
+        comment.update(author, content);
         return comment;
     }
 

@@ -1,5 +1,7 @@
 package com.rest1.domain.post.post.controller;
 
+import com.rest1.domain.member.member.entity.Member;
+import com.rest1.domain.member.member.service.MemberService;
 import com.rest1.domain.post.post.dto.PostDto;
 import com.rest1.domain.post.post.entity.Post;
 import com.rest1.domain.post.post.service.PostService;
@@ -22,7 +24,7 @@ import java.util.List;
 public class ApiV1PostController {
 
     private final PostService postService;
-
+    private final MemberService memberService;
 
     @GetMapping
     @Transactional(readOnly = true)
@@ -84,8 +86,10 @@ public class ApiV1PostController {
     public RsData<PostWriteResBody> createItem(
             @RequestBody @Valid PostWriteReqBody reqBody
     ) {
-        Post post = postService.write(reqBody.title, reqBody.content);
-        long totalCount = postService.count();
+        // 아래는 임시로 추가한 멤버, 추후 로직 교체 예정
+        Member actor = memberService.findByUsername("user1").get();
+
+        Post post = postService.write(actor, reqBody.title, reqBody.content);
 
         System.out.println("createItem 메서드 실행");
 
@@ -117,9 +121,11 @@ public class ApiV1PostController {
             @PathVariable Long id,
             @RequestBody @Valid PostModifyReqBody reqBody
     ) {
+        // 아래는 임시로 추가한 멤버, 추후 로직 교체 예정
+        Member actor = memberService.findByUsername("user1").get();
 
         Post post = postService.findById(id).get();
-        postService.modify(post, reqBody.title, reqBody.content);
+        postService.modify(actor, post, reqBody.title, reqBody.content);
 
         return new RsData(
                 "200-1",
