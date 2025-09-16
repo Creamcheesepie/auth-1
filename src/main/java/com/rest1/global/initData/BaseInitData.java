@@ -41,6 +41,7 @@ public class BaseInitData {
         System.out.println(memberService.memberCount());
 
         memberService.join("system","system","관리자");
+        memberService.join("admin","admin","운영자");
         memberService.join("user1","1234","유저1");
         memberService.join("user2","1234","유저2");
         memberService.join("user3","1234","유저3");

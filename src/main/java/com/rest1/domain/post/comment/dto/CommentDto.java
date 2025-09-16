@@ -9,7 +9,9 @@ public record CommentDto(
         LocalDateTime createDate,
         LocalDateTime modifyDate,
         String content,
-        String authorName
+        Long userId,
+        String authorName,
+        Long postId
 ) {
     public CommentDto(Comment comment) {
         this(
@@ -17,7 +19,9 @@ public record CommentDto(
                 comment.getCreateDate(),
                 comment.getModifyDate(),
                 comment.getContent(),
-                comment.getAuthor().getNickname()
+                comment.getAuthor().getId(),
+                comment.getAuthor().getNickname(),
+                comment.getPost().getId()
         );
     }
 }

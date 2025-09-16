@@ -10,11 +10,13 @@ import jakarta.persistence.ManyToOne;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Entity
 @AllArgsConstructor
 @NoArgsConstructor
 @Getter
+@Setter
 public class Comment extends BaseEntity {
 
     private String content;
@@ -25,9 +27,10 @@ public class Comment extends BaseEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     private Member author;
 
-    public Comment(Member author, String content) {
+    public Comment(Member author, String content , Post post) {
         this.author = author;
         this.content = content;
+        this.post = post;
     }
 
     public void update(Member author,String content) {
