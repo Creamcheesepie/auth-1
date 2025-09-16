@@ -9,7 +9,7 @@ public record CommentDto(
         LocalDateTime createDate,
         LocalDateTime modifyDate,
         String content,
-        Long userId,
+        Long authorId,
         String authorName,
         Long postId
 ) {

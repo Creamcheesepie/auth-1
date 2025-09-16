@@ -56,7 +56,10 @@ public class ApiV1CommentControllerTest {
                 .andExpect(jsonPath("$[0].id").value(3))
                 .andExpect(jsonPath("$[0].createDate").exists())
                 .andExpect(jsonPath("$[0].modifyDate").exists())
-                .andExpect(jsonPath("$[0].content").value("댓글 1-3"));
+                .andExpect(jsonPath("$[0].content").value("댓글 1-3"))
+                .andExpect(jsonPath("$[0].authorId").value(3))
+                .andExpect(jsonPath("$[0].authorName").value("유저1"))
+                .andExpect(jsonPath("$[0].postId").value(1));
 
     }
 
@@ -80,7 +83,10 @@ public class ApiV1CommentControllerTest {
                 .andExpect(jsonPath("$.id").value(1))
                 .andExpect(jsonPath("$.createDate").exists())
                 .andExpect(jsonPath("$.modifyDate").exists())
-                .andExpect(jsonPath("$.content").value("댓글 1-1"));
+                .andExpect(jsonPath("$.content").value("댓글 1-1"))
+                .andExpect(jsonPath("$.authorId").value(3))
+                .andExpect(jsonPath("$.authorName").value("유저1"))
+                .andExpect(jsonPath("$.postId").value(1));
     }
 
     @Test
@@ -111,7 +117,10 @@ public class ApiV1CommentControllerTest {
                 .andExpect(jsonPath("$.data.commentDto.id").value(6))
                 .andExpect(jsonPath("$.data.commentDto.createDate").exists())
                 .andExpect(jsonPath("$.data.commentDto.modifyDate").exists())
-                .andExpect(jsonPath("$.data.commentDto.content").value(content));
+                .andExpect(jsonPath("$.data.commentDto.content").value(content))
+                .andExpect(jsonPath("$.data.commentDto.authorId").value(3))
+                .andExpect(jsonPath("$.data.commentDto.authorName").value("유저1"))
+                .andExpect(jsonPath("$.data.commentDto.postId").value(1));;
     }
 
     @Test

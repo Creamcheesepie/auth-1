@@ -1,5 +1,7 @@
 package com.rest1.domain.post.post.controller;
 
+import com.rest1.domain.member.member.entity.Member;
+import com.rest1.domain.member.member.service.MemberService;
 import com.rest1.domain.post.post.entity.Post;
 import com.rest1.domain.post.post.repository.PostRepository;
 import org.junit.jupiter.api.DisplayName;
@@ -31,6 +33,8 @@ public class ApiV1PostControllerTest {
 
     @Autowired
     private PostRepository postRepository;
+    @Autowired
+    private MemberService memberService;
 
     @Test
     @DisplayName("글 다건 조회")
@@ -106,6 +110,7 @@ public class ApiV1PostControllerTest {
     void t3() throws Exception {
         String title = "제목입니다";
         String content = "내용입니다";
+        Member author = memberService.findByUsername("user1").get();
 
         ResultActions resultActions = mvc
                 .perform(
@@ -131,8 +136,8 @@ public class ApiV1PostControllerTest {
                 .andExpect(jsonPath("$.data.postDto.modifyDate").exists())
                 .andExpect(jsonPath("$.data.postDto.title").value(title))
                 .andExpect(jsonPath("$.data.postDto.content").value(content))
-                .andExpect(jsonPath("$.data.postDto.authorName").value("유저1"))
-                .andExpect(jsonPath("$.data.postDto.authorId").value(3));
+                .andExpect(jsonPath("$.data.postDto.authorName").value(author.getNickname()))
+                .andExpect(jsonPath("$.data.postDto.authorId").value(author.getId()));
     }
 
 
