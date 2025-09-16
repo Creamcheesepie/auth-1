@@ -27,4 +27,8 @@ public class Member extends BaseEntity {
         this.nickname = nickname;
         this.apiKey = UUID.randomUUID().toString();
     }
+
+    public boolean isCorrectPassword(String password) {
+        return this.password.equals(password);
+    }
 }

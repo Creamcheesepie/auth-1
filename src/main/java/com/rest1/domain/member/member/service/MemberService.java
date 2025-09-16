@@ -2,6 +2,8 @@ package com.rest1.domain.member.member.service;
 
 import com.rest1.domain.member.member.entity.Member;
 import com.rest1.domain.member.member.repository.MemberRepository;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -25,5 +27,9 @@ public class MemberService {
     public Member join(String username , String password, String nickname) {
         Member member = new Member(username, password, nickname);
         return memberRepository.save(member);
+    }
+
+    public Optional<Member> findByAPiKey(@NotBlank @Size(min = 30, max = 40) String apiKey) {
+        return memberRepository.findByApiKey(apiKey);
     }
 }
