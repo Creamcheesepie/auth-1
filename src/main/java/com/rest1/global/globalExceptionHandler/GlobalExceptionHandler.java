@@ -8,6 +8,7 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.method.annotation.HandlerMethodValidationException;
 
 import java.util.Comparator;
 import java.util.NoSuchElementException;
@@ -22,6 +23,15 @@ public class GlobalExceptionHandler {
         return new RsData<Void>(
                 "404-1",
                 "존재하지 않는 데이터입니다."
+        );
+    }
+
+    @ExceptionHandler(HandlerMethodValidationException.class)
+    @ResponseBody
+    public RsData<Void> handleException(HandlerMethodValidationException e){
+        return new RsData<Void>(
+          "400",
+          "잘못된 입력입니다."
         );
     }
 
