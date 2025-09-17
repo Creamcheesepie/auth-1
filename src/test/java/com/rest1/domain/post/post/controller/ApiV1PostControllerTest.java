@@ -111,7 +111,7 @@ public class ApiV1PostControllerTest {
         String title = "제목입니다";
         String content = "내용입니다";
         Member author = memberService.findByUsername("user1").get();
-
+        String apiKey = author.getApiKey();
         ResultActions resultActions = mvc
                 .perform(
                         post("/api/v1/posts")
@@ -122,6 +122,7 @@ public class ApiV1PostControllerTest {
                                             "content": "%s"
                                         }
                                         """.formatted(title, content))
+                                .header("Authorization", "Bearer %s".formatted(apiKey))
                 )
                 .andDo(print());
 
@@ -147,7 +148,8 @@ public class ApiV1PostControllerTest {
         long targetId = 1;
         String title = "제목 수정";
         String content = "내용 수정";
-
+        Member author = memberService.findByUsername("user1").get();
+        String apiKey = author.getApiKey();
         ResultActions resultActions = mvc
                 .perform(
                         put("/api/v1/posts/%d".formatted(targetId))
@@ -158,6 +160,7 @@ public class ApiV1PostControllerTest {
                                             "content": "%s"
                                         }
                                         """.formatted(title, content))
+                                .header("Authorization", "Bearer %s".formatted(apiKey))
                 )
                 .andDo(print());
 
@@ -180,10 +183,13 @@ public class ApiV1PostControllerTest {
     @DisplayName("글 삭제")
     void t5() throws Exception {
         long targetId = 1;
+        Member author = memberService.findByUsername("user1").get();
+        String apiKey = author.getApiKey();
 
         ResultActions resultActions = mvc
                 .perform(
                         delete("/api/v1/posts/%d".formatted(targetId))
+                                .header("Authorization", "Bearer %s".formatted(apiKey))
                 )
                 .andDo(print());
 

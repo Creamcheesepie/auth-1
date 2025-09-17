@@ -53,9 +53,15 @@ public class ApiV1PostController {
     @DeleteMapping("/{id}")
     @Operation(summary = "글 삭제")
     public RsData<Void> deleteItem(
-            @PathVariable Long id
+            @PathVariable Long id,
+            @RequestHeader("Authorization") @NotBlank @Size(min = 30, max = 50) String apiKey
     ) {
+        apiKey = apiKey.replace("Bearer ", "");
+        Member actor = memberService.findByAPiKey(apiKey).orElseThrow(() -> new ServiceException("401-1", "API 키가 올바르지 않습니다."));
+
+        // 권환 체크
         Post post = postService.findById(id).get();
+        if(!actor.equals(post.getAuthor())) throw new ServiceException("403-1","삭제 권한이 없습니다.");
         postService.delete(post);
 
         return new RsData<Void>(
@@ -120,12 +126,17 @@ public class ApiV1PostController {
     @Operation(summary = "글 수정")
     public RsData<Void> modifyItem(
             @PathVariable Long id,
-            @RequestBody @Valid PostModifyReqBody reqBody
+            @RequestBody @Valid PostModifyReqBody reqBody,
+            @RequestHeader("Authorization") @NotBlank @Size(min = 30, max = 50) String apiKey
     ) {
-        // 아래는 임시로 추가한 멤버, 추후 로직 교체 예정
-        Member actor = memberService.findByUsername("user1").get();
+        apiKey = apiKey.replace("Bearer ", "");
+        Member actor = memberService.findByAPiKey(apiKey).orElseThrow(() -> new ServiceException("401-1", "API 키가 올바르지 않습니다."));
 
+        // 권환 체크
         Post post = postService.findById(id).get();
+        if(!actor.equals(post.getAuthor())) throw new ServiceException("403-1","수정 권한이 없습니다.");
+
+        // 글 수정
         postService.modify(actor, post, reqBody.title, reqBody.content);
 
         return new RsData(
