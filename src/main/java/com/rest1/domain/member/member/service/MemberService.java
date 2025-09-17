@@ -37,4 +37,17 @@ public class MemberService {
     public Optional<Member> findByAPiKey(@NotBlank @Size(min = 30, max = 40) String apiKey) {
         return memberRepository.findByApiKey(apiKey);
     }
+
+    public Member login(@NotBlank @Size(min = 2, max = 30) String username, @NotBlank @Size(min = 2, max = 30) String password) {
+        Member member = memberRepository.findByUsername(username).orElseThrow(
+                () -> new ServiceException("401-1", "존재하지 않는 아이디입니다.")
+        );
+
+        if(!member.isCorrectPassword(password)) {
+            throw  new ServiceException("401-1", "틀린 비밀번호입니다. 다시 확인해주세요.");
+        }
+
+        return member;
+
+    }
 }

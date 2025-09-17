@@ -39,7 +39,7 @@ public class ApiV1MemberController {
     ) {
     }
 
-    @PostMapping
+    @PostMapping("/join")
     public RsData<MemberDto> join(
             @RequestBody @Valid JoinReqBody reqBody
     ){
@@ -48,6 +48,38 @@ public class ApiV1MemberController {
                 "201-1",
                 "회원가입이 완료되었습니다. %s님 환영합니다.".formatted(newMember.getNickname()),
                 new MemberDto(newMember)
+        );
+    }
+
+    record LogInReqBody(
+            @NotBlank
+            @Size(min = 2, max = 30)
+            String username,
+            @NotBlank
+            @Size(min = 2, max = 30)
+            String password
+    ) {
+    }
+
+    record LoginResBody(
+            MemberDto memberDto,
+            String apiKey
+    ) {
+    }
+
+    @PostMapping("/login")
+    public RsData<LoginResBody> login(
+            @RequestBody @Valid LogInReqBody reqBody
+    ){
+        Member member = memberService.login(reqBody.username,reqBody.password);
+
+        return new RsData<LoginResBody>(
+            "200-1",
+                "%s님 환영합니다.".formatted(member.getUsername()),
+                new LoginResBody(
+                        new MemberDto(member),
+                        member.getApiKey()
+                )
         );
     }
 
