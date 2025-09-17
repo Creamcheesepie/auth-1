@@ -2,6 +2,7 @@ package com.rest1.domain.post.post.entity;
 
 import com.rest1.domain.member.member.entity.Member;
 import com.rest1.domain.post.comment.entity.Comment;
+import com.rest1.global.exception.ServiceException;
 import com.rest1.global.jpa.entity.BaseEntity;
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -57,5 +58,11 @@ public class Post extends BaseEntity {
         return comments.stream()
                 .filter(c -> c.getId().equals(commentId))
                 .findFirst();
+    }
+
+    public void isAuthorized(Member author){
+        if(!this.author.equals(author)){
+            throw new ServiceException("403-1","권한이 없는 사용자입니다.");
+        }
     }
 }
