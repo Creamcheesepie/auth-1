@@ -1,6 +1,8 @@
 package com.rest1.domain.post.comment.controller;
 
 
+import com.rest1.domain.member.member.entity.Member;
+import com.rest1.domain.member.member.repository.MemberRepository;
 import com.rest1.domain.post.comment.entity.Comment;
 import com.rest1.domain.post.post.entity.Post;
 import com.rest1.domain.post.post.repository.PostRepository;
@@ -32,6 +34,8 @@ public class ApiV1CommentControllerTest {
 
     @Autowired
     private PostRepository postRepository;
+    @Autowired
+    private MemberRepository memberRepository;
 
     @Test
     @DisplayName("댓글 다건 조회 - 1번 글에 대한 댓글")
@@ -95,7 +99,7 @@ public class ApiV1CommentControllerTest {
 
         long targetPostId = 1;
         String content = "새로운 댓글";
-
+        Member actor = memberRepository.findByUsername("user1").get();
         ResultActions resultActions = mvc
                 .perform(
                         post("/api/v1/posts/%d/comments".formatted(targetPostId))
@@ -105,6 +109,7 @@ public class ApiV1CommentControllerTest {
                                             "content": "%s"
                                         }
                                         """.formatted(content))
+                                .header("Authorization", "Bearer %s".formatted(actor.getApiKey()))
                 )
                 .andDo(print());
 
@@ -129,6 +134,7 @@ public class ApiV1CommentControllerTest {
         long targetPostId = 1;
         long targetCommentId = 1;
         String content = "댓글 내용 수정";
+        Member actor = memberRepository.findByUsername("user1").get();
 
         ResultActions resultActions = mvc
                 .perform(
@@ -139,6 +145,7 @@ public class ApiV1CommentControllerTest {
                                             "content": "%s"
                                         }
                                         """.formatted(content))
+                                .header("Authorization", "Bearer %s".formatted(actor.getApiKey()))
                 )
                 .andDo(print());
 
@@ -156,14 +163,44 @@ public class ApiV1CommentControllerTest {
     }
 
     @Test
-    @DisplayName("댓글 삭제 - 1번 글의 1번 댓글 삭제")
+    @DisplayName("댓글 수정 - 다른 사용자의 댓글 수정")
     void t5() throws Exception {
         long targetPostId = 1;
         long targetCommentId = 1;
+        String content = "댓글 내용 수정";
+        Member actor = memberRepository.findByUsername("user2").get();
 
         ResultActions resultActions = mvc
                 .perform(
+                        put("/api/v1/posts/%d/comments/%d".formatted(targetPostId, targetCommentId))
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content("""
+                                        {
+                                            "content": "%s"
+                                        }
+                                        """.formatted(content))
+                                .header("Authorization", "Bearer %s".formatted(actor.getApiKey()))
+                )
+                .andDo(print());
+
+        resultActions
+                .andExpect(handler().handlerType(ApiV1CommentController.class))
+                .andExpect(handler().methodName("modifyItem"))
+                .andExpect(status().isForbidden())
+                .andExpect(jsonPath("$.resultCode").value("403-1"))
+                .andExpect(jsonPath("$.msg").value("권한이 없는 사용자입니다."));
+    }
+
+    @Test
+    @DisplayName("댓글 삭제 - 1번 글의 1번 댓글 삭제")
+    void t6() throws Exception {
+        long targetPostId = 1;
+        long targetCommentId = 1;
+        Member actor = memberRepository.findByUsername("user1").get();
+        ResultActions resultActions = mvc
+                .perform(
                         delete("/api/v1/posts/%d/comments/%d".formatted(targetPostId, targetCommentId))
+                                .header("Authorization", "Bearer %s".formatted(actor.getApiKey()))
                 )
                 .andDo(print());
 

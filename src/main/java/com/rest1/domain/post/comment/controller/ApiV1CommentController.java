@@ -6,6 +6,7 @@ import com.rest1.domain.post.comment.dto.CommentDto;
 import com.rest1.domain.post.comment.entity.Comment;
 import com.rest1.domain.post.post.entity.Post;
 import com.rest1.domain.post.post.service.PostService;
+import com.rest1.global.rq.Rq;
 import com.rest1.global.rsData.RsData;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -26,6 +27,7 @@ public class ApiV1CommentController {
 
     private final PostService postService;
     private final MemberService memberService;
+    private final Rq rq;
 
     @GetMapping(value = "/{postId}/comments")
     @Operation(summary = "다건 조회")
@@ -58,7 +60,11 @@ public class ApiV1CommentController {
             @PathVariable Long commentId
     ) {
 
+        Member actor = rq.getActor();
         Post post = postService.findById(postId).get();
+        Comment comment = post.findCommentById(commentId).get();
+        comment.isAuthorized(actor);
+
         postService.deleteComment(post, commentId);
 
         return new RsData<>(
@@ -84,12 +90,10 @@ public class ApiV1CommentController {
     @Operation(summary = "댓글 작성")
     public RsData<CommentWriteResBody> createItem(
             @PathVariable Long postId,
-            @RequestBody @Valid CommentWriteReqBody reqBody,
-            @NotBlank String username
+            @RequestBody @Valid CommentWriteReqBody reqBody
     ) {
 
-        Member actor = memberService.findByUsername(username).get();
-
+        Member actor = rq.getActor();
         Post post = postService.findById(postId).get();
         Comment comment = postService.writeComment(actor,post, reqBody.content);
 
@@ -121,8 +125,11 @@ public class ApiV1CommentController {
             @RequestBody @Valid CommentWriteReqBody reqBody
     ) {
         // 아래는 임시로 추가한 멤버, 추후 로직 교체 예정
-        Member actor = memberService.findByUsername("user1").get();
+        Member actor = rq.getActor();
         Post post = postService.findById(postId).get();
+        Comment comment = post.findCommentById(commentId).get();
+
+        comment.isAuthorized(actor);
         postService.modifyComment(actor, post, commentId, reqBody.content);
 
         return new RsData<>(
