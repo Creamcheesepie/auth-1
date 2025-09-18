@@ -41,7 +41,7 @@ public class ApiV1MemberControllerTest {
 
         ResultActions resultActions = mvc
                 .perform(
-                        post("/api/v1/members")
+                        post("/api/v1/members/join")
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content("""
                                         {
@@ -74,7 +74,7 @@ public class ApiV1MemberControllerTest {
 
         ResultActions resultActions = mvc
                 .perform(
-                        post("/api/v1/members")
+                        post("/api/v1/members/join")
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content("""
                                         {
@@ -130,7 +130,7 @@ public class ApiV1MemberControllerTest {
     }
 
     @Test
-    @DisplayName("로그인 테스트")
+    @DisplayName("로그인 쿠키 테스트")
     public void t4() throws Exception {
         String username = "user1";
         String password = "1234";
@@ -169,7 +169,10 @@ public class ApiV1MemberControllerTest {
                     assertThat(apiKeyCookie).isNotNull();
 
                     if(apiKeyCookie != null) {
-                        assertThat(apiKeyCookie.getValue()).isNotBlank();
+                        assertThat(apiKeyCookie.getValue()).isEqualTo(member.getApiKey());
+                        assertThat(apiKeyCookie.getDomain()).isEqualTo("localhost");
+                        assertThat(apiKeyCookie.getPath()).isEqualTo("/");
+                        assertThat(apiKeyCookie.isHttpOnly()).isTrue();
                     }
                 });
 
