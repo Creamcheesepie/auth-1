@@ -40,11 +40,17 @@ public class BaseInitData {
         System.out.println("work 1 실행");
         System.out.println(memberService.memberCount());
 
-        memberService.join("system","system","관리자");
-        memberService.join("admin","admin","운영자");
-        memberService.join("user1","1234","유저1");
-        memberService.join("user2","1234","유저2");
-        memberService.join("user3","1234","유저3");
+        // 개발 편의성을 위해 API키를 고정적으로 지정함
+        Member system = memberService.join("system","system","관리자");
+        system.updateApiKey("system");
+        Member admin = memberService.join("admin","admin","운영자");
+        admin.updateApiKey("admin");
+        Member user1 = memberService.join("user1","1234","유저1");
+        user1.updateApiKey("user1");
+        Member user2 = memberService.join("user2","1234","유저2");
+        user2.updateApiKey("user2");
+        Member user3 = memberService.join("user3","1234","유저3");
+        user3.updateApiKey("user3");
     }
 
     @Transactional

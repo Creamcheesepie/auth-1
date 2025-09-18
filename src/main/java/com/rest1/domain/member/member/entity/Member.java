@@ -31,4 +31,9 @@ public class Member extends BaseEntity {
     public boolean isCorrectPassword(String password) {
         return this.password.equals(password);
     }
+
+    public String updateApiKey(String apiKey) {
+        this.apiKey = apiKey;
+        return apiKey;
+    }
 }

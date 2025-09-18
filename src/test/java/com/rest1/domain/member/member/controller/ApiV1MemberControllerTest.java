@@ -16,8 +16,7 @@ import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.transaction.annotation.Transactional;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -49,7 +48,7 @@ public class ApiV1MemberControllerTest {
                                             "password": "%s",
                                             "nickname": "%s"
                                         }
-                                        """.formatted(username,password, nickname))
+                                        """.formatted(username, password, nickname))
                 )
                 .andDo(print());
 
@@ -82,7 +81,7 @@ public class ApiV1MemberControllerTest {
                                             "password": "%s",
                                             "nickname": "%s"
                                         }
-                                        """.formatted(username,password, nickname))
+                                        """.formatted(username, password, nickname))
                 )
                 .andDo(print());
 
@@ -109,7 +108,7 @@ public class ApiV1MemberControllerTest {
                                             "username": "%s",
                                             "password": "%s"
                                         }
-                                        """.formatted(username,password))
+                                        """.formatted(username, password))
                 )
                 .andDo(print());
 
@@ -144,7 +143,7 @@ public class ApiV1MemberControllerTest {
                                             "username": "%s",
                                             "password": "%s"
                                         }
-                                        """.formatted(username,password))
+                                        """.formatted(username, password))
                 )
                 .andDo(print());
 
@@ -168,7 +167,7 @@ public class ApiV1MemberControllerTest {
                     Cookie apiKeyCookie = result.getResponse().getCookie("apiKey");
                     assertThat(apiKeyCookie).isNotNull();
 
-                    if(apiKeyCookie != null) {
+                    if (apiKeyCookie != null) {
                         assertThat(apiKeyCookie.getValue()).isEqualTo(member.getApiKey());
                         assertThat(apiKeyCookie.getDomain()).isEqualTo("localhost");
                         assertThat(apiKeyCookie.getPath()).isEqualTo("/");
@@ -179,15 +178,48 @@ public class ApiV1MemberControllerTest {
     }
 
     @Test
-    @DisplayName("내 정보")
+    @DisplayName("로그아웃")
     public void t5() throws Exception {
+        String username = "user1";
+        String password = "1234";
+
+        ResultActions resultActions = mvc
+                .perform(
+                        delete("/api/v1/members/logout")
+                                .contentType(MediaType.APPLICATION_JSON)
+                )
+                .andDo(print());
+
+
+        String apiKey = "";
+        resultActions
+                .andExpect(handler().handlerType(ApiV1MemberController.class))
+                .andExpect(handler().methodName("logout"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.resultCode").value("200-1"))
+                .andExpect(jsonPath("$.msg").value("로그아웃 되었습니다.".formatted(username)))
+                .andExpect(result -> {
+                   Cookie apiKeyCookie = result.getResponse().getCookie("apiKey");
+                    if (apiKeyCookie != null) {
+                        assertThat(apiKeyCookie.getDomain()).isEqualTo("localhost");
+                        assertThat(apiKeyCookie.getPath()).isEqualTo("/");
+                        assertThat(apiKeyCookie.getMaxAge()).isEqualTo(0);
+                        assertThat(apiKeyCookie.isHttpOnly()).isTrue();
+                    }
+
+                });
+    }
+
+    @Test
+    @DisplayName("내 정보")
+    public void t6() throws Exception {
         Member actor = memberRepository.findByUsername("user1").get();
         String apiKey = actor.getApiKey();
 
         ResultActions resultActions = mvc
                 .perform(
                         get("/api/v1/members/me")
-                                .header("Authorization","Bearer %s".formatted(apiKey))
+                                .header("Authorization", "Bearer %s".formatted(apiKey))
                 )
                 .andDo(print());
 
@@ -203,4 +235,6 @@ public class ApiV1MemberControllerTest {
                 .andExpect(jsonPath("$.data.memberDto.modifyDate").value(actor.getModifyDate().toString()))
                 .andExpect(jsonPath("$.data.memberDto.name").value(actor.getNickname()));
     }
+
+
 }
