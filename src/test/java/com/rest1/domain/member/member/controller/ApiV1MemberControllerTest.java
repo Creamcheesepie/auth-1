@@ -2,6 +2,8 @@ package com.rest1.domain.member.member.controller;
 
 import com.rest1.domain.member.member.entity.Member;
 import com.rest1.domain.member.member.repository.MemberRepository;
+import jakarta.servlet.http.Cookie;
+import org.hamcrest.Matchers;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,6 +15,8 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.transaction.annotation.Transactional;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -123,5 +127,77 @@ public class ApiV1MemberControllerTest {
                 .andExpect(jsonPath("$.data.memberDto.createDate").value(member.getCreateDate().toString()))
                 .andExpect(jsonPath("$.data.memberDto.modifyDate").value(member.getModifyDate().toString()))
                 .andExpect(jsonPath("$.data.memberDto.name").value(member.getNickname()));
+    }
+
+    @Test
+    @DisplayName("로그인 테스트")
+    public void t4() throws Exception {
+        String username = "user1";
+        String password = "1234";
+
+        ResultActions resultActions = mvc
+                .perform(
+                        post("/api/v1/members/login")
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content("""
+                                        {
+                                            "username": "%s",
+                                            "password": "%s"
+                                        }
+                                        """.formatted(username,password))
+                )
+                .andDo(print());
+
+        Member member = memberRepository.findByUsername(username).get();
+
+        resultActions
+                .andExpect(handler().handlerType(ApiV1MemberController.class))
+                .andExpect(handler().methodName("login"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.resultCode").value("200-1"))
+                .andExpect(jsonPath("$.msg").value("%s님 환영합니다.".formatted(username)))
+                .andExpect(jsonPath("$.data.apiKey").exists())
+                .andExpect(jsonPath("$.data.memberDto").exists())
+                .andExpect(jsonPath("$.data.memberDto.id").value(member.getId()))
+                .andExpect(jsonPath("$.data.memberDto.createDate").value(Matchers.startsWith(member.getCreateDate().toString().substring(0, 20))))
+                .andExpect(jsonPath("$.data.memberDto.modifyDate").value(Matchers.startsWith(member.getModifyDate().toString().substring(0, 20))))
+                .andExpect(jsonPath("$.data.memberDto.name").value(member.getNickname()));
+
+        resultActions
+                .andExpect(result -> {
+                    Cookie apiKeyCookie = result.getResponse().getCookie("apiKey");
+                    assertThat(apiKeyCookie).isNotNull();
+
+                    if(apiKeyCookie != null) {
+                        assertThat(apiKeyCookie.getValue()).isNotBlank();
+                    }
+                });
+
+    }
+
+    @Test
+    @DisplayName("내 정보")
+    public void t5() throws Exception {
+        Member actor = memberRepository.findByUsername("user1").get();
+        String apiKey = actor.getApiKey();
+
+        ResultActions resultActions = mvc
+                .perform(
+                        get("/api/v1/members/me")
+                                .header("Authorization","Bearer %s".formatted(apiKey))
+                )
+                .andDo(print());
+
+        resultActions
+                .andExpect(handler().handlerType(ApiV1MemberController.class))
+                .andExpect(handler().methodName("me"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.resultCode").value("200-1"))
+                .andExpect(jsonPath("$.msg").value("%s님의 회원정보입니다.".formatted(actor.getUsername())))
+                .andExpect(jsonPath("$.data.memberDto").exists())
+                .andExpect(jsonPath("$.data.memberDto.id").value(actor.getId()))
+                .andExpect(jsonPath("$.data.memberDto.createDate").value(actor.getCreateDate().toString()))
+                .andExpect(jsonPath("$.data.memberDto.modifyDate").value(actor.getModifyDate().toString()))
+                .andExpect(jsonPath("$.data.memberDto.name").value(actor.getNickname()));
     }
 }
