@@ -11,7 +11,7 @@ import java.util.Map;
 
 public class Ut {
     public static class jwt{
-        public String toString(String secret, long expireSeconds, Map<String, Object> body){
+        public static String toString(String secret, long expireSeconds, Map<String, Object> body){
             ClaimsBuilder claimsBuilder = Jwts.claims();
 
             for (Map.Entry<String, Object> entry : body.entrySet()) {

@@ -1,5 +1,8 @@
 package com.rest1.domain.member.member.service;
 
+import com.rest1.domain.member.member.entity.Member;
+import com.rest1.domain.member.member.repository.MemberRepository;
+import com.rest1.standard.Ut;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
 import org.junit.jupiter.api.DisplayName;
@@ -27,6 +30,8 @@ public class AuthTokenServiceTest {
 
     @Autowired
     private AuthTokenService authTokenService;
+    @Autowired
+    private MemberRepository memberRepository;
 
     @Test
     @DisplayName("authTokenService가 존재하는지?")
@@ -61,6 +66,26 @@ public class AuthTokenServiceTest {
     @Test
     @DisplayName("Ut.jwt.toString을 통해 JWT 생성, {name=\"Paul\",age=23}")
     void t3() {
+        String jwt = Ut.jwt.toString(
+                secretPattern.toString(),
+                expireMillis,
+                Map.of("name", "Paul", "age", 23)
+        );
+
+        assertThat(jwt).isNotBlank();
+
+        System.out.println("jwt = " + jwt);
+    }
+
+    @Test
+    @DisplayName("member의 인증 데이터를 기반으로 JWT 생성")
+    void t4() {
+        Member member1 = memberRepository.findByUsername("user1").get();
+
+        String accessToken = authTokenService.genAccessToken(member1);
+        assertThat(accessToken).isNotBlank();
+
+        System.out.println("accessToken = " + accessToken);
 
     }
 
