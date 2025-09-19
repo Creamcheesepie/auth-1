@@ -26,7 +26,7 @@ public class AuthTokenServiceTest {
     // 토큰 만료기간: 1년
     // 만료기간 : 필수
     private  long expireMillis = 1000L * 60 * 60 * 24 * 365;
-    private byte[] secretPattern = "abcdefghijklmnopqrstuvwxyz1234567890abcdefghijklmnopqrstuvwxyz1234567890".getBytes(StandardCharsets.UTF_8);
+    private String secretPattern = "abcdefghijklmnopqrstuvwxyz1234567890abcdefghijklmnopqrstuvwxyz1234567890";
 
     @Autowired
     private AuthTokenService authTokenService;
@@ -44,21 +44,32 @@ public class AuthTokenServiceTest {
     void t2() {
 
         // SecretKey : 위변조 방지 토큰, 이 위변조 방지 토큰의 키바이트는 유출되면 안된다.
-        SecretKey secretKey = Keys.hmacShaKeyFor(secretPattern);
+        SecretKey secretKey = Keys.hmacShaKeyFor(secretPattern.getBytes(StandardCharsets.UTF_8));
 
         // 발행 시간과 만료 시간 설정
         Date issuedAt = new Date();
         Date expiration = new Date(issuedAt.getTime() + expireMillis);
 
+        Map<String,Object> payload = Map.of("name", "Paul", "age", 23);
 
         String jwt = Jwts.builder()
-                .claims(Map.of("name", "Paul", "age", 23)) // 내용
+                .claims(payload) // 내용
                 .issuedAt(issuedAt) // 생성날짜
                 .expiration(expiration) // 만료날짜
                 .signWith(secretKey) // 키 서명
                 .compact();
 
-        assertThat(jwt).isNotBlank();
+
+        Map<String, Object> parsedPayload = (Map<String, Object>) Jwts
+                .parser()
+                .verifyWith(secretKey)
+                .build()
+                .parse(jwt)
+                .getPayload();
+
+        assertThat(parsedPayload)
+                .containsAllEntriesOf(payload);
+
 
         System.out.println("jwt = " + jwt);
     }
@@ -67,13 +78,16 @@ public class AuthTokenServiceTest {
     @DisplayName("Ut.jwt.toString을 통해 JWT 생성, {name=\"Paul\",age=23}")
     void t3() {
         String jwt = Ut.jwt.toString(
-                secretPattern.toString(),
+                secretPattern,
                 expireMillis,
                 Map.of("name", "Paul", "age", 23)
         );
 
         assertThat(jwt).isNotBlank();
 
+        boolean validResult = Ut.jwt.isValid(jwt,secretPattern);
+
+        assertThat(validResult).isTrue();
         System.out.println("jwt = " + jwt);
     }
 
