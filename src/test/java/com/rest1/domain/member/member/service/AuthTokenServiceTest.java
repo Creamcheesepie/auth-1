@@ -77,6 +77,7 @@ public class AuthTokenServiceTest {
     @Test
     @DisplayName("Ut.jwt.toString을 통해 JWT 생성, {name=\"Paul\",age=23}")
     void t3() {
+        Map<String,Object> payload = Map.of("name", "Paul", "age", 23);
         String jwt = Ut.jwt.toString(
                 secretPattern,
                 expireMillis,
@@ -87,6 +88,9 @@ public class AuthTokenServiceTest {
 
         boolean validResult = Ut.jwt.isValid(jwt,secretPattern);
 
+        Map<String, Object> parsedPayload  = Ut.jwt.payload(jwt,secretPattern);
+
+        assertThat(parsedPayload).isEqualTo(payload);
         assertThat(validResult).isTrue();
         System.out.println("jwt = " + jwt);
     }
