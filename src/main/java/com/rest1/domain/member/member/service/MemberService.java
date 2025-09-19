@@ -14,6 +14,7 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class MemberService {
 
+    private final  AuthTokenService authTokenService;
     private final MemberRepository memberRepository;
 
     public Optional<Member> findByUsername(String username) {
@@ -49,5 +50,9 @@ public class MemberService {
 
         return member;
 
+    }
+
+    public String genAccessToken(Member member) {
+        return  authTokenService.genAccessToken(member);
     }
 }

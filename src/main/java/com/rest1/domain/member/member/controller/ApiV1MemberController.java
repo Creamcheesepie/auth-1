@@ -63,7 +63,8 @@ public class ApiV1MemberController {
 
     record LoginResBody(
             MemberDto memberDto,
-            String apiKey
+            String apiKey,
+            String accessToken
     ) {
     }
 
@@ -73,14 +74,19 @@ public class ApiV1MemberController {
             HttpServletResponse response
     ){
         Member member = memberService.login(reqBody.username,reqBody.password);
+
+        String accessToken = memberService.genAccessToken(member);
+
         rq.addCookie("apiKey",member.getApiKey());
+        rq.addCookie("accessToken",accessToken);
 
         return new RsData<LoginResBody>(
             "200-1",
                 "%s님 환영합니다.".formatted(member.getUsername()),
                 new LoginResBody(
                         new MemberDto(member),
-                        member.getApiKey()
+                        member.getApiKey(),
+                        accessToken
                 )
         );
     }

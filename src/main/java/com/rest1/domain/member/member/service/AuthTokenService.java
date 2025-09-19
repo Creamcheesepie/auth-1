@@ -16,7 +16,7 @@ public class AuthTokenService {
     @Value("${custom.jwt.expireMillis}")
     private Long expireMillis;
 
-    public String genAccessToken(Member member) {
+    String genAccessToken(Member member) {
         String accessToken = Ut.jwt.toString(
                 secretPattern,
                 expireMillis,
@@ -26,7 +26,7 @@ public class AuthTokenService {
         return accessToken;
     }
 
-    public Map<String, Object> payloadOrNull(String jwt) {
+    Map<String, Object> payloadOrNull(String jwt) {
         Map<String, Object> payload = Ut.jwt.payloadOrNull(jwt,secretPattern);
         if(payload == null){
             return null;

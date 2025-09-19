@@ -156,6 +156,7 @@ public class ApiV1MemberControllerTest {
                 .andExpect(jsonPath("$.resultCode").value("200-1"))
                 .andExpect(jsonPath("$.msg").value("%s님 환영합니다.".formatted(username)))
                 .andExpect(jsonPath("$.data.apiKey").exists())
+                .andExpect(jsonPath("$.data.accessToken").isNotEmpty())
                 .andExpect(jsonPath("$.data.memberDto").exists())
                 .andExpect(jsonPath("$.data.memberDto.id").value(member.getId()))
                 .andExpect(jsonPath("$.data.memberDto.createDate").value(Matchers.startsWith(member.getCreateDate().toString().substring(0, 20))))
@@ -165,6 +166,16 @@ public class ApiV1MemberControllerTest {
         resultActions
                 .andExpect(result -> {
                     Cookie apiKeyCookie = result.getResponse().getCookie("apiKey");
+                    assertThat(apiKeyCookie).isNotNull();
+
+                    if (apiKeyCookie != null) {
+                        assertThat(apiKeyCookie.getValue()).isEqualTo(member.getApiKey());
+                        assertThat(apiKeyCookie.getDomain()).isEqualTo("localhost");
+                        assertThat(apiKeyCookie.getPath()).isEqualTo("/");
+                        assertThat(apiKeyCookie.isHttpOnly()).isTrue();
+                    }
+
+                    Cookie accessTokenCookue = result.getResponse().getCookie("accessToken");
                     assertThat(apiKeyCookie).isNotNull();
 
                     if (apiKeyCookie != null) {
