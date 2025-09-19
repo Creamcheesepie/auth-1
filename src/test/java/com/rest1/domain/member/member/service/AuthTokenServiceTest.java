@@ -30,8 +30,8 @@ public class AuthTokenServiceTest {
     @Value("${custom.jwt.secretPattern}")
     private String secretPattern;
 
-    @Value("${custom.jwt.expireMillis}")
-    private Long expireMillis;
+    @Value("${custom.jwt.expireSecond}")
+    private Long expireSecond;
 
     @Autowired
     private AuthTokenService authTokenService;
@@ -53,7 +53,7 @@ public class AuthTokenServiceTest {
 
         // 발행 시간과 만료 시간 설정
         Date issuedAt = new Date();
-        Date expiration = new Date(issuedAt.getTime() + expireMillis);
+        Date expiration = new Date(issuedAt.getTime() + expireSecond * 1000);
 
         Map<String,Object> payload = Map.of("name", "Paul", "age", 23);
 
@@ -85,7 +85,7 @@ public class AuthTokenServiceTest {
         Map<String,Object> payload = Map.of("name", "Paul", "age", 23);
         String jwt = Ut.jwt.toString(
                 secretPattern,
-                expireMillis,
+                expireSecond,
                 Map.of("name", "Paul", "age", 23)
         );
 

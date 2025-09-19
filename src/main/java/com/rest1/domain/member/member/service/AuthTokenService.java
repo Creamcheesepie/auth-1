@@ -13,13 +13,13 @@ public class AuthTokenService {
     @Value("${custom.jwt.secretPattern}")
     private String secretPattern;
 
-    @Value("${custom.jwt.expireMillis}")
-    private Long expireMillis;
+    @Value("${custom.jwt.expireSecond}")
+    private Long expireSecond;
 
     String genAccessToken(Member member) {
         String accessToken = Ut.jwt.toString(
                 secretPattern,
-                expireMillis,
+                expireSecond,
                 Map.of("id",member.getId(),"username",member.getUsername())
         );
 

@@ -221,31 +221,58 @@ public class ApiV1MemberControllerTest {
                 });
     }
 
-    @Test
-    @DisplayName("내 정보")
-    public void t6() throws Exception {
-        Member actor = memberRepository.findByUsername("user1").get();
-        String apiKey = actor.getApiKey();
+        @Test
+        @DisplayName("내 정보")
+        public void t6() throws Exception {
+            Member actor = memberRepository.findByUsername("user1").get();
+            String apiKey = actor.getApiKey();
 
-        ResultActions resultActions = mvc
-                .perform(
-                        get("/api/v1/members/me")
-                                .header("Authorization", "Bearer %s".formatted(apiKey))
-                )
-                .andDo(print());
+            ResultActions resultActions = mvc
+                    .perform(
+                            get("/api/v1/members/me")
+                                    .header("Authorization", "Bearer %s".formatted(apiKey))
+                    )
+                    .andDo(print());
 
-        resultActions
-                .andExpect(handler().handlerType(ApiV1MemberController.class))
-                .andExpect(handler().methodName("me"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.resultCode").value("200-1"))
-                .andExpect(jsonPath("$.msg").value("%s님의 회원정보입니다.".formatted(actor.getUsername())))
-                .andExpect(jsonPath("$.data.memberDto").exists())
-                .andExpect(jsonPath("$.data.memberDto.id").value(actor.getId()))
-                .andExpect(jsonPath("$.data.memberDto.createDate").value(actor.getCreateDate().toString()))
-                .andExpect(jsonPath("$.data.memberDto.modifyDate").value(actor.getModifyDate().toString()))
-                .andExpect(jsonPath("$.data.memberDto.name").value(actor.getNickname()));
-    }
+            resultActions
+                    .andExpect(handler().handlerType(ApiV1MemberController.class))
+                    .andExpect(handler().methodName("me"))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.resultCode").value("200-1"))
+                    .andExpect(jsonPath("$.msg").value("%s님의 회원정보입니다.".formatted(actor.getUsername())))
+                    .andExpect(jsonPath("$.data.memberDto").exists())
+                    .andExpect(jsonPath("$.data.memberDto.id").value(actor.getId()))
+                    .andExpect(jsonPath("$.data.memberDto.createDate").value(actor.getCreateDate().toString()))
+                    .andExpect(jsonPath("$.data.memberDto.modifyDate").value(actor.getModifyDate().toString()))
+                    .andExpect(jsonPath("$.data.memberDto.name").value(actor.getNickname()));
+        }
+
+      @Test
+        @DisplayName("내 정보, 올바른 apiKey, 유효하지 않은 accessToken")
+        public void t7() throws Exception {
+            Member actor = memberRepository.findByUsername("user1").get();
+            String apiKey = actor.getApiKey();
+            String wrongAccessToken = "틀린 엑세스 토큰이렁 뭬렁뭬렁";
+
+            ResultActions resultActions = mvc
+                    .perform(
+                            get("/api/v1/members/me")
+                                    .header("Authorization", "Bearer %s %s".formatted(apiKey, wrongAccessToken))
+                    )
+                    .andDo(print());
+
+            resultActions
+                    .andExpect(handler().handlerType(ApiV1MemberController.class))
+                    .andExpect(handler().methodName("me"))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.resultCode").value("200-1"))
+                    .andExpect(jsonPath("$.msg").value("%s님의 회원정보입니다.".formatted(actor.getUsername())))
+                    .andExpect(jsonPath("$.data.memberDto").exists())
+                    .andExpect(jsonPath("$.data.memberDto.id").value(actor.getId()))
+                    .andExpect(jsonPath("$.data.memberDto.createDate").value(actor.getCreateDate().toString()))
+                    .andExpect(jsonPath("$.data.memberDto.modifyDate").value(actor.getModifyDate().toString()))
+                    .andExpect(jsonPath("$.data.memberDto.name").value(actor.getNickname()));
+        }
 
 
 }

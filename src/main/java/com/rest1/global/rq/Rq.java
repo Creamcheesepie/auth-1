@@ -10,6 +10,10 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import org.springframework.web.context.annotation.RequestScope;
 
+import java.util.Arrays;
+import java.util.Map;
+import java.util.Optional;
+
 @Component
 @RequestScope
 @RequiredArgsConstructor
@@ -20,36 +24,84 @@ public class Rq {
     private final HttpServletResponse response;
 
     public Member getActor() {
-        String apiKey = "";
-        String authorization= request.getHeader("Authorization");
+        String apiKey;
+        String accessToken;
 
+        String headerAuthorization = getHeader("Authorization", "");
 
-        if( authorization != null && !authorization.isEmpty()) {
-            if(!authorization.startsWith("Bearer ")) {
-                throw new ServiceException("401-2" ,"헤더의 인증정보 형식이 올바르지 않습니다");
-            }
+        if (!headerAuthorization.isBlank()) {
+            if (!headerAuthorization.startsWith("Bearer "))
+                throw new ServiceException("401-2", "Authorization 헤더가 Bearer 형식이 아닙니다.");
 
-            apiKey = authorization.replace("Bearer ","");
+            String[] headerAuthorizationBits = headerAuthorization.split(" ", 3);
+
+            apiKey = headerAuthorizationBits[1];
+            accessToken = headerAuthorizationBits.length == 3 ? headerAuthorizationBits[2] : "";
         } else {
-            Cookie[] cookies = request.getCookies();
+            apiKey = getCookieValue("apiKey", "");
+            accessToken = getCookieValue("accessToken", "");
+        }
 
-            if(cookies==null) {
-                throw new ServiceException("401-1", "인증 정보가 없습니다");
-            }
+        if (apiKey.isBlank())
+            throw new ServiceException("401-1", "로그인 후 이용해주세요.");
 
+        Member member = null;
 
-            for(Cookie cookie : cookies) {
-                if(cookie.getName().equals("apiKey")) {
-                    apiKey = cookie.getValue();
-                }
+        if (!accessToken.isBlank()) {
+            Map<String, Object> payload = memberService.payloadOrNull(accessToken);
+
+            if (payload != null) {
+                int id = (int) payload.get("id");
+                member = memberService.findById(id)
+                        .orElseThrow(() -> new ServiceException("401-4", "accessToken의 id에 해당하는 회원이 존재하지 않습니다."));
             }
         }
 
+        if (member == null) {
+            member = memberService
+                    .findByApiKey(apiKey)
+                    .orElseThrow(() -> new ServiceException("401-3", "API 키가 유효하지 않습니다."));
+        }
 
-        Member actor= memberService.findByAPiKey(apiKey)
-                .orElseThrow(() -> new ServiceException("401-3","API 키가 올바르지 않습니다."));
+        return member;
+    }
 
-        return actor;
+
+    private String getHeader(String name, String defaultValue) {
+        return Optional
+                .ofNullable(request.getHeader(name))
+                .filter(headerValue -> !headerValue.isBlank())
+                .orElse(defaultValue);
+    }
+
+    private String getCookieValue(String name, String defaultValue) {
+        return Optional
+                .ofNullable(request.getCookies())
+                .flatMap(
+                        cookies ->
+                                Arrays.stream(cookies)
+                                        .filter(cookie -> cookie.getName().equals(name))
+                                        .map(Cookie::getValue)
+                                        .filter(value -> !value.isBlank())
+                                        .findFirst()
+                )
+                .orElse(defaultValue);
+    }
+
+    public void setCookie(String name, String value) {
+        if (value == null) value = "";
+
+        Cookie cookie = new Cookie(name, value);
+        cookie.setPath("/");
+        cookie.setHttpOnly(true);
+        cookie.setDomain("localhost");
+
+        // 값이 없다면 해당 쿠키변수를 삭제하라는 뜻
+        if (value.isBlank()) {
+            cookie.setMaxAge(0);
+        }
+
+        response.addCookie(cookie);
     }
 
     public void addCookie(String name, String value){
@@ -57,6 +109,12 @@ public class Rq {
         cookie.setDomain("localhost");
         cookie.setPath("/");
         cookie.setHttpOnly(true);
+
+        // 값이 없다면 해당 쿠키변수를 삭제하라는 뜻
+        if (value.isBlank()) {
+            cookie.setMaxAge(0);
+        }
+
         response.addCookie(cookie);
     }
 

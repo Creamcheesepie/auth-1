@@ -8,6 +8,7 @@ import jakarta.validation.constraints.Size;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.util.Map;
 import java.util.Optional;
 
 @Service
@@ -54,5 +55,17 @@ public class MemberService {
 
     public String genAccessToken(Member member) {
         return  authTokenService.genAccessToken(member);
+    }
+
+    public Map<String, Object> payloadOrNull(String accessToken) {
+        return  authTokenService.payloadOrNull(accessToken);
+    }
+
+    public Optional<Member> findById(int id) {
+        return memberRepository.findById((long)id);
+    }
+
+    public Optional<Member> findByApiKey(String apiKey) {
+        return memberRepository.findByApiKey(apiKey);
     }
 }
