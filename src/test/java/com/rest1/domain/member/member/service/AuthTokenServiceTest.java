@@ -88,9 +88,9 @@ public class AuthTokenServiceTest {
 
         boolean validResult = Ut.jwt.isValid(jwt,secretPattern);
 
-        Map<String, Object> parsedPayload  = Ut.jwt.payload(jwt,secretPattern);
+        Map<String, Object> parsedPayload  = Ut.jwt.payloadOrNull(jwt,secretPattern);
 
-        assertThat(parsedPayload).isEqualTo(payload);
+        assertThat(parsedPayload).containsAllEntriesOf(payload);
         assertThat(validResult).isTrue();
         System.out.println("jwt = " + jwt);
     }
@@ -102,6 +102,15 @@ public class AuthTokenServiceTest {
 
         String accessToken = authTokenService.genAccessToken(member1);
         assertThat(accessToken).isNotBlank();
+
+        Map<String, Object> payload = authTokenService.payloadOrNull(accessToken);
+
+        assertThat(payload).containsAllEntriesOf(
+                Map.of(
+                        "id",member1.getId(),
+                        "username",member1.getUsername()
+                )
+        );
 
         System.out.println("accessToken = " + accessToken);
 

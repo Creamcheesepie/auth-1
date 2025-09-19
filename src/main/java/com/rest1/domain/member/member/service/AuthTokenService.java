@@ -20,4 +20,15 @@ public class AuthTokenService {
 
         return accessToken;
     }
+
+    public Map<String, Object> payloadOrNull(String jwt) {
+        Map<String, Object> payload = Ut.jwt.payloadOrNull(jwt,secretPattern);
+        if(payload == null){
+            return null;
+        }
+
+        int id = (int)payload.get("id");
+        String name = (String)payload.get("username");
+        return Map.of("id",(long)id,"username",name);
+    }
 }
