@@ -268,11 +268,11 @@ public class ApiV1PostControllerTest {
         Member author = memberService.findByUsername("user1").get();
         String apiKey = author.getApiKey();
 
-        Ut.jwt.toString(
+        String accessToken = Ut.jwt.toString(
                 secretPattern,
                 expireSecond,
-                Map.of("id",author.getId(),"username",author.getUsername())
-                );
+                Map.of("id", author.getId(), "username", author.getUsername())
+        );
 
         ResultActions resultActions = mvc
                 .perform(
@@ -284,7 +284,7 @@ public class ApiV1PostControllerTest {
                                             "content": "%s"
                                         }
                                         """.formatted(title, content))
-                                .header("Authorization", "Bearer wrong-api-Key %s".formatted(apiKey))
+                                .header("Authorization", "Bearer wrong-api-Key %s".formatted(accessToken))
                 )
                 .andDo(print());
 

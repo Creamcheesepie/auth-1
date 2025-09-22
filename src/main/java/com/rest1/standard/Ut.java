@@ -13,7 +13,7 @@ import java.util.Map;
 
 public class Ut {
     public static class jwt{
-        public static String toString(String secret, long expireSeconds, Map<String, Object> body){
+        public static String toString(String secret, long expireSeconds, Map<String, Object> body) {
             ClaimsBuilder claimsBuilder = Jwts.claims();
 
             for (Map.Entry<String, Object> entry : body.entrySet()) {
@@ -38,23 +38,28 @@ public class Ut {
         }
 
         public static boolean isValid(String jwt, String secretPattern) {
-            SecretKey secretKey = Keys.hmacShaKeyFor(secretPattern.getBytes(StandardCharsets.UTF_8)) ;
 
-            try{
+            SecretKey secretKey = Keys.hmacShaKeyFor(secretPattern.getBytes(StandardCharsets.UTF_8));
+
+            try {
                 Jwts
                         .parser()
                         .verifyWith(secretKey)
                         .build()
                         .parse(jwt);
-            } catch (Exception e){
+
+            } catch (Exception e) {
                 return false;
             }
+
             return true;
         }
 
         public static Map<String, Object> payloadOrNull(String jwt, String secretPattern) {
+
             SecretKey secretKey = Keys.hmacShaKeyFor(secretPattern.getBytes(StandardCharsets.UTF_8));
-            if(isValid(jwt, secretPattern)){
+
+            if(isValid(jwt, secretPattern)) {
                 return (Map<String, Object>) Jwts
                         .parser()
                         .verifyWith(secretKey)

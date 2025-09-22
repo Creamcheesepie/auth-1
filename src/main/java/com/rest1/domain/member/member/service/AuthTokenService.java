@@ -17,24 +17,26 @@ public class AuthTokenService {
     private Long expireSecond;
 
     String genAccessToken(Member member) {
-        String accessToken = Ut.jwt.toString(
+
+        return Ut.jwt.toString(
                 secretPattern,
                 expireSecond,
-                Map.of("id",member.getId(),"username",member.getUsername())
+                Map.of("id", member.getId(), "username", member.getUsername())
         );
-
-        return accessToken;
     }
 
     Map<String, Object> payloadOrNull(String jwt) {
-        Map<String, Object> payload = Ut.jwt.payloadOrNull(jwt,secretPattern);
-        if(payload == null){
+        Map<String, Object> payload = Ut.jwt.payloadOrNull(jwt, secretPattern);
+
+        if(payload == null) {
             return null;
         }
 
         Number idNo = (Number)payload.get("id");
         long id = idNo.longValue();
-        String name = (String)payload.get("username");
-        return Map.of("id",(long)id,"username",name);
+
+        String username = (String)payload.get("username");
+
+        return Map.of("id", id, "username", username);
     }
 }

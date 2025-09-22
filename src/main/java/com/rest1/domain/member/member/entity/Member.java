@@ -28,6 +28,11 @@ public class Member extends BaseEntity {
         this.apiKey = UUID.randomUUID().toString();
     }
 
+    public Member(long id, String username) {
+        this.username = username;
+        setId(id);
+    }
+
     public boolean isCorrectPassword(String password) {
         return this.password.equals(password);
     }

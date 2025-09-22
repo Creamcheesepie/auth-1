@@ -52,8 +52,8 @@ public class Rq {
 
             if (payload != null) {
                 long id = (long) payload.get("id");
-                member = memberService.findById(id)
-                        .orElseThrow(() -> new ServiceException("401-4", "accessToken의 id에 해당하는 회원이 존재하지 않습니다."));
+                String username = (String) payload.get("username");
+                member = new Member(id, username);
             }
         }
 
@@ -104,26 +104,7 @@ public class Rq {
         response.addCookie(cookie);
     }
 
-    public void addCookie(String name, String value){
-        Cookie cookie = new Cookie(name,value);
-        cookie.setDomain("localhost");
-        cookie.setPath("/");
-        cookie.setHttpOnly(true);
-
-        // 값이 없다면 해당 쿠키변수를 삭제하라는 뜻
-        if (value.isBlank()) {
-            cookie.setMaxAge(0);
-        }
-
-        response.addCookie(cookie);
-    }
-
-    public void deleteCookie(String name){
-        Cookie cookie = new Cookie(name,"");
-        cookie.setDomain("localhost");
-        cookie.setPath("/");
-        cookie.setHttpOnly(true);
-        cookie.setMaxAge(0);
-        response.addCookie(cookie);
+    public void deleteCookie(String name) {
+        setCookie(name, null);
     }
 }
