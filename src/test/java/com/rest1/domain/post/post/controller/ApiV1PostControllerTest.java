@@ -4,9 +4,11 @@ import com.rest1.domain.member.member.entity.Member;
 import com.rest1.domain.member.member.service.MemberService;
 import com.rest1.domain.post.post.entity.Post;
 import com.rest1.domain.post.post.repository.PostRepository;
+import com.rest1.standard.Ut;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
@@ -14,6 +16,8 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.containsInRelativeOrder;
@@ -35,6 +39,12 @@ public class ApiV1PostControllerTest {
     private PostRepository postRepository;
     @Autowired
     private MemberService memberService;
+
+    @Value("${custom.jwt.secretPattern}")
+    private String secretPattern;
+
+    @Value("${custom.jwt.expireSecond}")
+    private long expireSecond;
 
     @Test
     @DisplayName("글 다건 조회")
@@ -224,8 +234,70 @@ public class ApiV1PostControllerTest {
     }
 
     @Test
-    @DisplayName("글 수정")
+    @DisplayName("글 작성, JSON 양식이 잘못된 경우")
     void t7() throws Exception {
+        String title = "제목입니다.";
+        String content = "내용입니다";
+
+        ResultActions resultActions = mvc
+                .perform(
+                        post("/api/v1/posts")
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content("""
+                                        {
+                                            "title": "%s"
+                                            "content": "%s"
+                                        
+                                        """.formatted(title, content))
+                )
+                .andDo(print());
+
+        resultActions
+                .andExpect(handler().handlerType(ApiV1PostController.class))
+                .andExpect(handler().methodName("createItem"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.resultCode").value("400-2"))
+                .andExpect(jsonPath("$.msg").value("잘못된 형식의 요청 데이터입니다."));
+    }
+
+    @Test
+    @DisplayName("글작성, 유요한 엑세스 토큰, 잘못된 apiKey")
+    void t8() throws Exception {
+        String title = "제목입니다";
+        String content = "내용입니다";
+        Member author = memberService.findByUsername("user1").get();
+        String apiKey = author.getApiKey();
+
+        Ut.jwt.toString(
+                secretPattern,
+                expireSecond,
+                Map.of("id",author.getId(),"username",author.getUsername())
+                );
+
+        ResultActions resultActions = mvc
+                .perform(
+                        post("/api/v1/posts")
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content("""
+                                        {
+                                            "title": "%s",
+                                            "content": "%s"
+                                        }
+                                        """.formatted(title, content))
+                                .header("Authorization", "Bearer wrong-api-Key %s".formatted(apiKey))
+                )
+                .andDo(print());
+
+        resultActions
+                .andExpect(handler().handlerType(ApiV1PostController.class))
+                .andExpect(handler().methodName("createItem"))
+                .andExpect(status().isCreated());
+    }
+
+
+    @Test
+    @DisplayName("글 수정")
+    void t9() throws Exception {
         long targetId = 1;
         String title = "제목 수정";
         String content = "내용 수정";
@@ -260,36 +332,10 @@ public class ApiV1PostControllerTest {
         assertThat(post.getContent()).isEqualTo(content);
     }
 
-    @Test
-    @DisplayName("글 작성, JSON 양식이 잘못된 경우")
-    void t8() throws Exception {
-        String title = "제목입니다.";
-        String content = "내용입니다";
-
-        ResultActions resultActions = mvc
-                .perform(
-                        post("/api/v1/posts")
-                                .contentType(MediaType.APPLICATION_JSON)
-                                .content("""
-                                        {
-                                            "title": "%s"
-                                            "content": "%s"
-                                        
-                                        """.formatted(title, content))
-                )
-                .andDo(print());
-
-        resultActions
-                .andExpect(handler().handlerType(ApiV1PostController.class))
-                .andExpect(handler().methodName("createItem"))
-                .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.resultCode").value("400-2"))
-                .andExpect(jsonPath("$.msg").value("잘못된 형식의 요청 데이터입니다."));
-    }
 
     @Test
     @DisplayName("글 삭제")
-    void t9() throws Exception {
+    void t10() throws Exception {
         long targetId = 1;
         Member author = memberService.findByUsername("user1").get();
         String apiKey = author.getApiKey();
@@ -316,7 +362,7 @@ public class ApiV1PostControllerTest {
 
     @Test
     @DisplayName("글 단건 조회, 존재하지 않는 글")
-    void t10() throws Exception {
+    void t11() throws Exception {
         long targetId = Integer.MAX_VALUE;
 
         ResultActions resultActions = mvc
@@ -334,7 +380,7 @@ public class ApiV1PostControllerTest {
 
     @Test
     @DisplayName("글 작성, 올바르지 않은 헤더 형식")
-    void t11() throws Exception {
+    void t12() throws Exception {
         String title = "제목입니다";
         String content = "내용입니다";
         Member author = memberService.findByUsername("user1").get();
@@ -365,7 +411,7 @@ public class ApiV1PostControllerTest {
 
     @Test
     @DisplayName("글 작성, 잘못된/ 없는 API 키")
-    void t12() throws Exception {
+    void t13() throws Exception {
         String title = "제목입니다";
         String content = "내용입니다";
 

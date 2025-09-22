@@ -32,7 +32,8 @@ public class AuthTokenService {
             return null;
         }
 
-        int id = (int)payload.get("id");
+        Number idNo = (Number)payload.get("id");
+        long id = idNo.longValue();
         String name = (String)payload.get("username");
         return Map.of("id",(long)id,"username",name);
     }

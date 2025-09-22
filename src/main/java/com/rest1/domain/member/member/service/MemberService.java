@@ -61,7 +61,7 @@ public class MemberService {
         return  authTokenService.payloadOrNull(accessToken);
     }
 
-    public Optional<Member> findById(int id) {
+    public Optional<Member> findById(long id) {
         return memberRepository.findById((long)id);
     }
 
