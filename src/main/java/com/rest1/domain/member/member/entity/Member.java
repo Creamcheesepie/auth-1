@@ -3,7 +3,6 @@ package com.rest1.domain.member.member.entity;
 import com.rest1.global.jpa.entity.BaseEntity;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -15,7 +14,6 @@ import java.util.UUID;
 public class Member extends BaseEntity {
     @Column(unique = true)
     private String username;
-    @Getter(AccessLevel.PRIVATE)
     private String password;
     private String nickname;
     @Column(unique = true)
@@ -35,6 +33,7 @@ public class Member extends BaseEntity {
     }
 
     public boolean isCorrectPassword(String password) {
+
         return this.password.equals(password);
     }
 

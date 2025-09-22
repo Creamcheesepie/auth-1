@@ -6,6 +6,7 @@ import com.rest1.global.exception.ServiceException;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -18,6 +19,7 @@ public class MemberService {
 
     private final  AuthTokenService authTokenService;
     private final MemberRepository memberRepository;
+    private final PasswordEncoder passwordEncoder;
 
     public List<Member> findAll() {
         return memberRepository.findAll();
@@ -38,7 +40,7 @@ public class MemberService {
             throw new ServiceException("409-1","이미 사용중인 아이디입니다.");
         });
 
-        Member member = new Member(username, password, nickname);
+        Member member = new Member(username, passwordEncoder.encode(password), nickname);
         return memberRepository.save(member);
     }
 
@@ -51,7 +53,7 @@ public class MemberService {
                 () -> new ServiceException("401-1", "존재하지 않는 아이디입니다.")
         );
 
-        if(!member.isCorrectPassword(password)) {
+        if(passwordEncoder.matches(member.getPassword(), password)) {
             throw  new ServiceException("401-1", "틀린 비밀번호입니다. 다시 확인해주세요.");
         }
 
