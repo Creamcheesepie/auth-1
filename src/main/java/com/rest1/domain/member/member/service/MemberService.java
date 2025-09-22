@@ -8,6 +8,7 @@ import jakarta.validation.constraints.Size;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
@@ -17,6 +18,11 @@ public class MemberService {
 
     private final  AuthTokenService authTokenService;
     private final MemberRepository memberRepository;
+
+    public List<Member> findAll() {
+        return memberRepository.findAll();
+    }
+
 
     public Optional<Member> findByUsername(String username) {
         return  this.memberRepository.findByUsername(username);
