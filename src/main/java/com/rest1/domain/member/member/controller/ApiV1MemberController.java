@@ -97,7 +97,7 @@ public class ApiV1MemberController {
 
     @GetMapping("/me")
     public RsData<ResBody> me(){
-        Member actor = rq.getActor();
+        Member actor = memberService.findById(rq.getActor().getId()).get();
 
         return new RsData<ResBody>(
                 "200-1",

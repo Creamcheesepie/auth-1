@@ -47,7 +47,10 @@ public class Rq {
 
         Member member = null;
 
-        if (!accessToken.isBlank()) {
+        boolean isAccessTokenExists = !accessToken.isBlank();
+        boolean isAccessTokenValid = false;
+
+        if (isAccessTokenExists) {
             Map<String, Object> payload = memberService.payloadOrNull(accessToken);
 
             if (payload != null) {
@@ -65,8 +68,16 @@ public class Rq {
                     .orElseThrow(() -> new ServiceException("401-3", "API 키가 유효하지 않습니다."));
         }
 
+        if(isAccessTokenExists && !isAccessTokenValid) {
+            String newAccessToken = memberService.genAccessToken(member);
+            setCookie("accessToken",newAccessToken);
+            setHeader("X-New-Access-Token",newAccessToken);
+        }
+
         return member;
     }
+
+
 
 
     private String getHeader(String name, String defaultValue) {
@@ -88,6 +99,10 @@ public class Rq {
                                         .findFirst()
                 )
                 .orElse(defaultValue);
+    }
+
+    private void setHeader(String name, String newAccessToken) {
+        response.setHeader(name,newAccessToken);
     }
 
     public void setCookie(String name, String value) {
