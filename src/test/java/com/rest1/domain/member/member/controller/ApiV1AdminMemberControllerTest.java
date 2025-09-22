@@ -1,6 +1,8 @@
 package com.rest1.domain.member.member.controller;
 
+import com.rest1.domain.member.member.entity.Member;
 import com.rest1.domain.member.member.repository.MemberRepository;
+import jakarta.servlet.http.Cookie;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,10 +32,12 @@ public class ApiV1AdminMemberControllerTest {
     @Test
     @DisplayName("회원 다건 조회")
     void t1() throws Exception {
+        Member actor = memberRepository.findByUsername("admin").get();
 
         ResultActions resultActions = mvc
                 .perform(
                         get("/api/v1/admin/members")
+                                .cookie(new Cookie("apiKey",actor.getApiKey()))
                 )
                 .andDo(print());
 
@@ -56,10 +60,12 @@ public class ApiV1AdminMemberControllerTest {
     @Test
     @DisplayName("회원 다권 조회, 권한이 없는 경우")
     void t2() throws Exception {
+        Member actor = memberRepository.findByUsername("user1").get();
 
         ResultActions resultActions = mvc
                 .perform(
                         get("/api/v1/admin/members")
+                                .cookie(new Cookie("apiKey",actor.getApiKey()))
                 )
                 .andDo(print());
 
