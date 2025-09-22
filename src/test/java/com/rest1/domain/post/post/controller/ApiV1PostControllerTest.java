@@ -271,7 +271,7 @@ public class ApiV1PostControllerTest {
         String accessToken = Ut.jwt.toString(
                 secretPattern,
                 expireSecond,
-                Map.of("id", author.getId(), "username", author.getUsername())
+                Map.of("id", author.getId(), "username", author.getUsername(),"nickname", author.getNickname())
         );
 
         ResultActions resultActions = mvc
